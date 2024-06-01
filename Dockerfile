@@ -4,11 +4,11 @@ WORKDIR /root
 ENV LANG en_US.UTF-8
 
 ## Update Debian packages
-# RUN sed -i 's@deb.debian.org@mirrors.tuna.tsinghua.edu.cn@g' /etc/apt/sources.list.d/debian.sources
+RUN sed -i 's@deb.debian.org@mirrors.tuna.tsinghua.edu.cn@g' /etc/apt/sources.list.d/debian.sources
 RUN apt-get clean && apt-get update && \
 	apt-get install --no-install-recommends -y ninja-build gettext cmake unzip curl build-essential wget \
 	git ripgrep fd-find bear zsh \
-	lua5.4 python3 python3-pip python3-neovim python3-venv npm
+	lua5.4 python3 python3-pip python3-neovim python3-venv npm ccls
 
 ## Utils
 ENV PATH=/root/.cargo/bin:$PATH
@@ -26,6 +26,12 @@ RUN git clone https://github.com/kamiyaa/joshuto.git && \
     rm -r joshuto
 Run git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && \
     yes | zsh -c ~/.fzf/install
+
+RUN git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions \
+		~/.zsh/zsh-autosuggestions
+RUN git clone --depth 1 https://github.com/zsh-users/zsh-syntax-highlighting.git \
+		~/.zsh/zsh-syntax-highlighting
+
 RUN cargo install starship --locked
  
 ## Config files
@@ -41,7 +47,7 @@ RUN mv /root/dotfiles/config/.zsh /root/ && \
 ## Neovim 
 RUN git clone https://github.com/neovim/neovim && cd neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo -j $(nproc) && make install && cd .. && rm -rf neovim
 RUN npm install -g neovim
-ARG MASON_LSP="bash-language-server lua-language-server pyright python-lsp-server rust-analyzer"
+ARG MASON_LSP="bash-language-server lua-language-server pyright python-lsp-server rust-analyzer clangd"
 RUN nvim --headless "+Lazy! sync" +MasonUpdate +"MasonInstall ${MASON_LSP}" +qa
 
 ## Clean
